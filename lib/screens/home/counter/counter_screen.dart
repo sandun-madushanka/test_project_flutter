@@ -1,22 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testflutter/providers/countdown_provider.dart';
-import 'package:testflutter/screens/home/counter/counter_screen.dart';
+import 'package:testflutter/screens/widgets/button_primary_rect.dart';
+import 'package:testflutter/ui_helpers/colors.dart';
 
-import '../../ui_helpers/colors.dart';
-import '../widgets/button_primary_rect.dart';
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
+class CounterScreen extends StatefulWidget {
+  const CounterScreen({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CounterScreen> createState() => _CounterScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _CounterScreenState extends State<CounterScreen> {
   late int _countdown;
+  late int _start;
+
+  late Timer _timer;
 
   @override
   void initState() {
@@ -28,18 +29,50 @@ class _MyHomePageState extends State<MyHomePage> {
   getData() async {
     _countdown = await Provider.of<CountdownProvider>(context, listen: false)
         .getCountdownValue();
+    _countdown = _start;
+  }
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text("Counter Screen"),
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 50),
+              child: Text(
+                'Countdown : $_countdown',
+                style: const TextStyle(fontSize: 20),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: ButtonPrimaryRound(
