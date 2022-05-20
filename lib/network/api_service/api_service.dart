@@ -4,7 +4,7 @@ import 'package:testflutter/network/response/app_response.dart';
 
 part 'api_service.g.dart';
 
-@RestApi(baseUrl: 'localhost:8000/api')
+@RestApi(baseUrl: 'http://192.168.1.101:8000/api')
 abstract class ApiService {
   factory ApiService(Dio dio, {String? baseUrl}) {
     dio.options = BaseOptions(

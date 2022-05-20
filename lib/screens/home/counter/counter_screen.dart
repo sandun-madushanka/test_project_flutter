@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testflutter/providers/countdown_provider.dart';
@@ -14,10 +15,12 @@ class CounterScreen extends StatefulWidget {
 }
 
 class _CounterScreenState extends State<CounterScreen> {
-  late int _countdown;
-  late int _start;
+  int _countdown = 0;
+  int _start = 0;
 
   late Timer _timer;
+
+  bool isEnable = true;
 
   @override
   void initState() {
@@ -27,23 +30,35 @@ class _CounterScreenState extends State<CounterScreen> {
   }
 
   getData() async {
-    _countdown = await Provider.of<CountdownProvider>(context, listen: false)
+    int val = await Provider.of<CountdownProvider>(context, listen: false)
         .getCountdownValue();
-    _countdown = _start;
+    setState(() {
+      _countdown = val;
+      _start = _countdown;
+    });
   }
 
   void startTimer() {
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
+    print('call');
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
       oneSec,
       (Timer timer) {
         if (_start == 0) {
           setState(() {
             timer.cancel();
+            isEnable = true;
+            AwesomeNotifications().createNotification(
+                content: NotificationContent(
+                    id: 10,
+                    channelKey: 'basic_channel',
+                    title: 'Counter Notification',
+                    body: 'Countdown is over'));
           });
         } else {
           setState(() {
             _start--;
+            isEnable = false;
           });
         }
       },
@@ -62,37 +77,72 @@ class _CounterScreenState extends State<CounterScreen> {
       appBar: AppBar(
         title: Text("Counter Screen"),
       ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 50),
-              child: Text(
-                'Countdown : $_countdown',
-                style: const TextStyle(fontSize: 20),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ButtonPrimaryRound(
-                  btnName: "Go to Counter",
-                  isOutlineButton: false,
-                  onBtnClick: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return CounterScreen();
+      body: Provider.of<CountdownProvider>(context, listen: false).isLoading
+          ? Center(child: CircularProgressIndicator.adaptive())
+          : Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 50),
+                    child: Text(
+                      'Time : $_countdown',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 50),
+                    child: Text(
+                      'Countdown : $_start',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  isEnable
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ButtonPrimaryRound(
+                              btnName: "Start Timer",
+                              isOutlineButton: false,
+                              onBtnClick: () {
+                                startTimer();
+                              },
+                              colors: colorGreen),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ButtonPrimaryRound(
+                              btnName: "Start Timer",
+                              isOutlineButton: false,
+                              onBtnClick: () {},
+                              colors: colorGreenDark),
+                        ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ButtonPrimaryRound(
+                        btnName: "Reset Timer",
+                        isOutlineButton: false,
+                        onBtnClick: () {
+                          setState(() {
+                            _start = _countdown;
+                          });
                         },
-                      ),
-                    );
-                  },
-                  colors: colorGreen),
-            )
-          ],
-        ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+                        colors: colorGreen),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ButtonPrimaryRound(
+                        btnName: "Refresh Countdown",
+                        isOutlineButton: false,
+                        onBtnClick: () {
+                          getData();
+                        },
+                        colors: colorGreen),
+                  )
+                ],
+              ),
+            ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

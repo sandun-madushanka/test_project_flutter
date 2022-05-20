@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:testflutter/providers/countdown_provider.dart';
 import 'package:testflutter/screens/home/counter/counter_screen.dart';
 
 import '../../ui_helpers/colors.dart';
@@ -16,18 +14,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late int _countdown;
-
   @override
   void initState() {
-    _countdown = 0;
-    getData();
     super.initState();
-  }
-
-  getData() async {
-    _countdown = await Provider.of<CountdownProvider>(context, listen: false)
-        .getCountdownValue();
   }
 
   @override
